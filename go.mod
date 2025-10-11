@@ -1,4 +1,4 @@
-module LingobotAPI-GO
+module lingobotAPI-GO
 
 go 1.25
 

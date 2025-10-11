@@ -10,9 +10,8 @@ import (
 func SetupCORS(router *gin.Engine) {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
-			"capacitor://localhost",
-			"http://localhost",
-			"http://localhost:4200",
+			"http://localhost:8100",  // ✅ forma correta
+			"https://localhost:8100", // (caso use HTTPS no futuro)
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},

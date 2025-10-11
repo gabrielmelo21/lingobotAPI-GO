@@ -1,10 +1,11 @@
 package routes
 
 import (
-	"controllers/controllers"
+	"lingobotAPI-GO/controllers"
+
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoutes(router *gin.Engine) {
-	router.GET("/hello", controllers.Hello)
+	router.GET("/", controllers.Hello)
 }

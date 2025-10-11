@@ -14,7 +14,7 @@ func main() {
 	config.SetupCORS(router)
 
 	// Inicializar o banco de dados (vem do config/database.go)
-	//config.ConnectDatabase()
+	config.ConnectDatabase()
 
 	// Registrar as rotas (vem de routes/routes.go)
 	routes.RegisterRoutes(router)

@@ -26,7 +26,6 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	// Carrega o arquivo .env
 	errToLoadEnv := godotenv.Load()
 	if errToLoadEnv != nil {
 		log.Fatal("Erro ao carregar o .env")

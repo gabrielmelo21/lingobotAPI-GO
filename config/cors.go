@@ -10,6 +10,7 @@ import (
 func SetupCORS(router *gin.Engine) {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
+			"*",
 			"http://localhost:8100",  // ✅ forma correta
 			"https://localhost:8100", // (caso use HTTPS no futuro)
 		},

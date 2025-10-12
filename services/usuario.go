@@ -102,7 +102,7 @@ func CriarUsuario(req CriarUsuarioRequest) error {
 		Tokens:         0,
 		Plano:          "free",
 		CreatedAt:      time.Now().Format("2006-01-02 15:04:05"),
-		Ranking:        0,
+		Ranking:        4,
 		Listening:      0,
 		Writing:        0,
 		Reading:        0,

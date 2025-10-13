@@ -3,6 +3,7 @@ package routes
 import (
 	"lingobotAPI-GO/controllers"
 	"lingobotAPI-GO/middlewares"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,6 +11,15 @@ import (
 func RegisterRoutes(router *gin.Engine) {
 
 	// Rotas públicas (sem autenticação)
+
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "ok",
+			"uptime":  time.Since(time.Now()).String(),
+			"version": "1.0.0",
+		})
+	})
+
 	router.POST("/usuarios", controllers.CriarUsuario)
 	router.POST("/login", controllers.Login)
 

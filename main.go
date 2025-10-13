@@ -3,6 +3,7 @@ package main
 import (
 	"lingobotAPI-GO/config"
 	"lingobotAPI-GO/routes"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,14 @@ func main() {
 	// Registrar as rotas (vem de routes/routes.go)
 	routes.RegisterRoutes(router)
 
-	// Rodar o servidor
-	router.Run(":8100")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // porta padrão local
+	}
+
+	err := router.Run(":" + port)
+	if err != nil {
+		return
+	}
+
 }

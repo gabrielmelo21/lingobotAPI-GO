@@ -31,7 +31,6 @@ func RegisterRoutes(router *gin.Engine) {
 
 	router.POST("/usuarios", controllers.CriarUsuario)
 	router.POST("/login", controllers.Login)
-	router.GET("/usuarios", controllers.GetUsuarios)
 
 	// Rotas protegidas (com autenticação)
 	protected := router.Group("/")

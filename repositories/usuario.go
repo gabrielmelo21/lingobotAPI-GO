@@ -147,3 +147,64 @@ func GetUsuarioByEmail(email string) (*models.Usuario, error) {
 
 	return &u, nil
 }
+
+// GetUsuarioByID busca usuário por ID
+func GetUsuarioByID(id int) (*models.Usuario, error) {
+	ctx := context.Background()
+	var u models.Usuario
+
+	query := `SELECT
+		id, nome, sobrenome, email, password, "OTP_code", "LingoEXP", "Level",
+		gender, data_nascimento, tokens, plano, created_at, referal_code,
+		invited_by, ranking, listening, writing, reading, speaking, gemas,
+		items, "dailyMissions", achievements, difficulty, battery, learning
+	FROM usuario WHERE id = $1`
+
+	var itemsJSON, dailyJSON, achievementsJSON []byte
+
+	err := config.DB.QueryRow(ctx, query, id).Scan(
+		&u.ID, &u.Nome, &u.Sobrenome, &u.Email, &u.Password, &u.OTPCode,
+		&u.LingoEXP, &u.Level, &u.Gender, &u.DataNascimento, &u.Tokens,
+		&u.Plano, &u.CreatedAt, &u.ReferalCode, &u.InvitedBy, &u.Ranking,
+		&u.Listening, &u.Writing, &u.Reading, &u.Speaking, &u.Gemas,
+		&itemsJSON, &dailyJSON, &achievementsJSON, &u.Difficulty,
+		&u.Battery, &u.Learning,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Deserializa os JSONs
+	json.Unmarshal(itemsJSON, &u.Items)
+	json.Unmarshal(dailyJSON, &u.DailyMissions)
+	json.Unmarshal(achievementsJSON, &u.Achievements)
+
+	return &u, nil
+}
+
+// UpdateUsuario atualiza os dados do usuário no banco
+func UpdateUsuario(u *models.Usuario) error {
+	ctx := context.Background()
+	query := `UPDATE usuario SET
+		nome = $1, sobrenome = $2, email = $3, "LingoEXP" = $4, "Level" = $5,
+		gender = $6, data_nascimento = $7, tokens = $8, plano = $9,
+		ranking = $10, listening = $11, writing = $12, reading = $13,
+		speaking = $14, gemas = $15, items = $16, "dailyMissions" = $17,
+		achievements = $18, difficulty = $19, battery = $20, learning = $21
+	WHERE id = $22`
+
+	itemsJSON, _ := json.Marshal(u.Items)
+	dailyJSON, _ := json.Marshal(u.DailyMissions)
+	achievementsJSON, _ := json.Marshal(u.Achievements)
+
+	_, err := config.DB.Exec(ctx, query,
+		u.Nome, u.Sobrenome, u.Email, u.LingoEXP, u.Level,
+		u.Gender, u.DataNascimento, u.Tokens, u.Plano,
+		u.Ranking, u.Listening, u.Writing, u.Reading,
+		u.Speaking, u.Gemas, itemsJSON, dailyJSON,
+		achievementsJSON, u.Difficulty, u.Battery, u.Learning,
+		u.ID,
+	)
+	return err
+}

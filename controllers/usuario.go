@@ -57,3 +57,35 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func UpdateUserData(c *gin.Context) {
+	var req services.UpdateUserDataRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"erro": "Dados inválidos"})
+		return
+	}
+
+	// Pega o user_id do token JWT
+	userIDFromToken, _ := c.Get("user_id")
+
+	// Validação extra: verifica se está tentando atualizar outro usuário
+	if req.ID != nil && *req.ID != userIDFromToken.(int) {
+		c.JSON(http.StatusForbidden, gin.H{"erro": "Você não pode atualizar dados de outro usuário"})
+		return
+	}
+
+	response, err := services.UpdateUserData(req)
+	if err != nil {
+		statusCode := http.StatusBadRequest
+
+		if err.Error() == "usuário não encontrado" {
+			statusCode = http.StatusNotFound
+		}
+
+		c.JSON(statusCode, gin.H{"erro": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}

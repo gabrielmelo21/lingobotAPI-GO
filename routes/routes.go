@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"lingobotAPI-GO/controllers"
 	"lingobotAPI-GO/middlewares"
 	"time"
@@ -8,20 +9,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func formatDuration(d time.Duration) string {
+	hours := int(d.Hours())
+	minutes := int(d.Minutes()) % 60
+	seconds := int(d.Seconds()) % 60
+	return fmt.Sprintf("%02dh %02dm %02ds", hours, minutes, seconds)
+}
+
 func RegisterRoutes(router *gin.Engine) {
 
 	// Rotas públicas (sem autenticação)
-
+	startTime := time.Now()
 	router.GET("/health", func(c *gin.Context) {
+		uptime := formatDuration(time.Since(startTime))
 		c.JSON(200, gin.H{
 			"status":  "ok",
-			"uptime":  time.Since(time.Now()).String(),
+			"uptime":  uptime,
 			"version": "1.0.0",
 		})
 	})
 
 	router.POST("/usuarios", controllers.CriarUsuario)
 	router.POST("/login", controllers.Login)
+	router.GET("/usuarios", controllers.GetUsuarios)
 
 	// Rotas protegidas (com autenticação)
 	protected := router.Group("/")

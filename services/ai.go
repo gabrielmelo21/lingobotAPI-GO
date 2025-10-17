@@ -1,8 +1,8 @@
 package services
 
 import (
+	"LingobotAPI-GO/utils"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -30,7 +30,7 @@ func CallGemini(text string) (string, error) {
 		},
 	}
 
-	jsonData, _ := json.Marshal(payload)
+	jsonData, _ := utils.Marshal(payload)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", err
@@ -43,7 +43,7 @@ func CallGemini(text string) (string, error) {
 
 	body, _ := io.ReadAll(resp.Body)
 	var result map[string]interface{}
-	json.Unmarshal(body, &result)
+	utils.Unmarshal(body, &result)
 
 	// Navega pela estrutura de resposta do Gemini
 	if candidates, ok := result["candidates"].([]interface{}); ok && len(candidates) > 0 {
@@ -82,7 +82,7 @@ func CallMistral(text string) (string, error) {
 		"max_tokens":  2000,
 	}
 
-	jsonData, _ := json.Marshal(payload)
+	jsonData, _ := utils.Marshal(payload)
 
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
@@ -111,7 +111,7 @@ func CallMistral(text string) (string, error) {
 
 		body, _ := io.ReadAll(resp.Body)
 		var result map[string]interface{}
-		json.Unmarshal(body, &result)
+		utils.Unmarshal(body, &result)
 
 		if choices, ok := result["choices"].([]interface{}); ok && len(choices) > 0 {
 			if choice, ok := choices[0].(map[string]interface{}); ok {
@@ -145,7 +145,7 @@ func CallCohere(text string) (string, error) {
 		"max_tokens":  1000,
 	}
 
-	jsonData, _ := json.Marshal(payload)
+	jsonData, _ := utils.Marshal(payload)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -163,7 +163,7 @@ func CallCohere(text string) (string, error) {
 
 	body, _ := io.ReadAll(resp.Body)
 	var result map[string]interface{}
-	json.Unmarshal(body, &result)
+	utils.Unmarshal(body, &result)
 
 	if textContent, ok := result["text"].(string); ok {
 		return textContent, nil
@@ -189,7 +189,7 @@ func CallGroq(text string) (string, error) {
 		"temperature": 0.7,
 	}
 
-	jsonData, _ := json.Marshal(payload)
+	jsonData, _ := utils.Marshal(payload)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -207,7 +207,7 @@ func CallGroq(text string) (string, error) {
 
 	body, _ := io.ReadAll(resp.Body)
 	var result map[string]interface{}
-	json.Unmarshal(body, &result)
+	utils.Unmarshal(body, &result)
 
 	if choices, ok := result["choices"].([]interface{}); ok && len(choices) > 0 {
 		if choice, ok := choices[0].(map[string]interface{}); ok {
@@ -248,7 +248,7 @@ func CallOpenRouter(text string) (string, error) {
 			"temperature": 0.7,
 		}
 
-		jsonData, _ := json.Marshal(payload)
+		jsonData, _ := utils.Marshal(payload)
 		req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 		req.Header.Set("Authorization", "Bearer "+apiKey)
 		req.Header.Set("Content-Type", "application/json")
@@ -265,7 +265,7 @@ func CallOpenRouter(text string) (string, error) {
 		if resp.StatusCode == http.StatusOK {
 			body, _ := io.ReadAll(resp.Body)
 			var result map[string]interface{}
-			json.Unmarshal(body, &result)
+			utils.Unmarshal(body, &result)
 
 			if choices, ok := result["choices"].([]interface{}); ok && len(choices) > 0 {
 				if choice, ok := choices[0].(map[string]interface{}); ok {

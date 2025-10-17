@@ -1,7 +1,6 @@
 package services
 
 import (
-	_ "encoding/json"
 	"errors"
 	"lingobotAPI-GO/models"
 	"lingobotAPI-GO/repositories"
@@ -116,7 +115,7 @@ func CriarUsuario(req CriarUsuarioRequest) error {
 		Writing:    0,
 		Reading:    0,
 		Speaking:   0,
-		Ranking:    0,
+		Ranking:    4,
 		Difficulty: "medium",
 		Learning:   "en",
 	}

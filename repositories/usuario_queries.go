@@ -2,9 +2,10 @@ package repositories
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"lingobotAPI-GO/config"
 	"lingobotAPI-GO/models"
+	"lingobotAPI-GO/utils"
 )
 
 // GetUsuarioProfile retorna dados básicos do perfil (tabela usuario)
@@ -64,10 +65,16 @@ func GetUsuarioContent(usuarioID int) (*models.UsuarioContentResponse, error) {
 		return nil, err
 	}
 
-	// Deserializa JSONs
-	json.Unmarshal(itemsJSON, &conteudo.Items)
-	json.Unmarshal(dailyJSON, &conteudo.DailyMissions)
-	json.Unmarshal(achievementsJSON, &conteudo.Achievements)
+	// Deserializa JSONs usando Sonic
+	if err := utils.Unmarshal(itemsJSON, &conteudo.Items); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar items: %v", err)
+	}
+	if err := utils.Unmarshal(dailyJSON, &conteudo.DailyMissions); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar daily_missions: %v", err)
+	}
+	if err := utils.Unmarshal(achievementsJSON, &conteudo.Achievements); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar achievements: %v", err)
+	}
 
 	return &models.UsuarioContentResponse{
 		Economia:  economia,

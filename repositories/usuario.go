@@ -2,10 +2,10 @@ package repositories
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"lingobotAPI-GO/config"
 	"lingobotAPI-GO/models"
+	"lingobotAPI-GO/utils"
 	"log"
 )
 
@@ -109,10 +109,21 @@ func InsertUsuario(
 		return fmt.Errorf("erro ao inserir usuario_social: %v", err)
 	}
 
-	// 6. Insere na tabela usuario_conteudo
-	itemsJSON, _ := json.Marshal(conteudo.Items)
-	dailyJSON, _ := json.Marshal(conteudo.DailyMissions)
-	achievementsJSON, _ := json.Marshal(conteudo.Achievements)
+	// 6. Insere na tabela usuario_conteudo usando Sonic
+	itemsJSON, err := utils.Marshal(conteudo.Items)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar items: %v", err)
+	}
+
+	dailyJSON, err := utils.Marshal(conteudo.DailyMissions)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar daily_missions: %v", err)
+	}
+
+	achievementsJSON, err := utils.Marshal(conteudo.Achievements)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar achievements: %v", err)
+	}
 
 	queryConteudo := `
 		INSERT INTO usuario_conteudo (usuario_id, items, daily_missions, achievements)
@@ -189,10 +200,16 @@ func GetAllUsuarios() ([]models.UsuarioResponse, error) {
 			continue
 		}
 
-		// Deserializa JSONs
-		json.Unmarshal(itemsJSON, &conteudo.Items)
-		json.Unmarshal(dailyJSON, &conteudo.DailyMissions)
-		json.Unmarshal(achievementsJSON, &conteudo.Achievements)
+		// Deserializa JSONs usando Sonic
+		if err := utils.Unmarshal(itemsJSON, &conteudo.Items); err != nil {
+			log.Printf("Erro ao deserializar items: %v", err)
+		}
+		if err := utils.Unmarshal(dailyJSON, &conteudo.DailyMissions); err != nil {
+			log.Printf("Erro ao deserializar daily_missions: %v", err)
+		}
+		if err := utils.Unmarshal(achievementsJSON, &conteudo.Achievements); err != nil {
+			log.Printf("Erro ao deserializar achievements: %v", err)
+		}
 
 		u.Economia = economia
 		u.Progresso = progresso
@@ -252,10 +269,16 @@ func GetUsuarioByEmail(email string) (*models.UsuarioCompleto, error) {
 		return nil, err
 	}
 
-	// Deserializa JSONs
-	json.Unmarshal(itemsJSON, &conteudo.Items)
-	json.Unmarshal(dailyJSON, &conteudo.DailyMissions)
-	json.Unmarshal(achievementsJSON, &conteudo.Achievements)
+	// Deserializa JSONs usando Sonic
+	if err := utils.Unmarshal(itemsJSON, &conteudo.Items); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar items: %v", err)
+	}
+	if err := utils.Unmarshal(dailyJSON, &conteudo.DailyMissions); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar daily_missions: %v", err)
+	}
+	if err := utils.Unmarshal(achievementsJSON, &conteudo.Achievements); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar achievements: %v", err)
+	}
 
 	uc.Seguranca = &seguranca
 	uc.Economia = economia
@@ -313,10 +336,16 @@ func GetUsuarioByID(id int) (*models.UsuarioCompleto, error) {
 		return nil, err
 	}
 
-	// Deserializa JSONs
-	json.Unmarshal(itemsJSON, &conteudo.Items)
-	json.Unmarshal(dailyJSON, &conteudo.DailyMissions)
-	json.Unmarshal(achievementsJSON, &conteudo.Achievements)
+	// Deserializa JSONs usando Sonic
+	if err := utils.Unmarshal(itemsJSON, &conteudo.Items); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar items: %v", err)
+	}
+	if err := utils.Unmarshal(dailyJSON, &conteudo.DailyMissions); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar daily_missions: %v", err)
+	}
+	if err := utils.Unmarshal(achievementsJSON, &conteudo.Achievements); err != nil {
+		return nil, fmt.Errorf("erro ao deserializar achievements: %v", err)
+	}
 
 	uc.Seguranca = &seguranca
 	uc.Economia = economia
@@ -404,10 +433,21 @@ func UpdateUsuarioCompleto(uc *models.UsuarioCompleto) error {
 		return fmt.Errorf("erro ao atualizar usuario_progresso: %v", err)
 	}
 
-	// 4. Atualiza tabela usuario_conteudo
-	itemsJSON, _ := json.Marshal(uc.Conteudo.Items)
-	dailyJSON, _ := json.Marshal(uc.Conteudo.DailyMissions)
-	achievementsJSON, _ := json.Marshal(uc.Conteudo.Achievements)
+	// 4. Atualiza tabela usuario_conteudo usando Sonic
+	itemsJSON, err := utils.Marshal(uc.Conteudo.Items)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar items: %v", err)
+	}
+
+	dailyJSON, err := utils.Marshal(uc.Conteudo.DailyMissions)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar daily_missions: %v", err)
+	}
+
+	achievementsJSON, err := utils.Marshal(uc.Conteudo.Achievements)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar achievements: %v", err)
+	}
 
 	queryConteudo := `
 		UPDATE usuario_conteudo SET

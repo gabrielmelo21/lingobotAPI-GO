@@ -1,8 +1,8 @@
 package services
 
 import (
+	"LingobotAPI-GO/utils"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -63,7 +63,7 @@ func GenerateTTSElevenLabs(text, voiceID string) ([]byte, error) {
 		},
 	}
 
-	jsonData, _ := json.Marshal(payload)
+	jsonData, _ := utils.Marshal(payload)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	req.Header.Set("xi-api-key", apiKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -134,10 +134,11 @@ func TranscribeAudio(filePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 
 	var uploadResp map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&uploadResp)
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	utils.Unmarshal(body, &uploadResp)
 
 	audioURL, ok := uploadResp["upload_url"].(string)
 	if !ok {
@@ -152,7 +153,7 @@ func TranscribeAudio(filePath string) (string, error) {
 		"speech_model": "universal",
 	}
 
-	jsonData, _ := json.Marshal(transcriptPayload)
+	jsonData, _ := utils.Marshal(transcriptPayload)
 	req, _ = http.NewRequest("POST", transcriptURL, bytes.NewBuffer(jsonData))
 	req.Header.Set("authorization", apiKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -161,10 +162,11 @@ func TranscribeAudio(filePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 
 	var transcriptResp map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&transcriptResp)
+	body, _ = io.ReadAll(resp.Body)
+	resp.Body.Close()
+	utils.Unmarshal(body, &transcriptResp)
 
 	transcriptID, ok := transcriptResp["id"].(string)
 	if !ok {
@@ -184,10 +186,11 @@ func TranscribeAudio(filePath string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		defer resp.Body.Close()
 
 		var pollResp map[string]interface{}
-		json.NewDecoder(resp.Body).Decode(&pollResp)
+		body, _ = io.ReadAll(resp.Body)
+		resp.Body.Close()
+		utils.Unmarshal(body, &pollResp)
 
 		status, _ := pollResp["status"].(string)
 

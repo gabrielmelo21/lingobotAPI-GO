@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	_ "lingobotAPI-GO/models"
 	"lingobotAPI-GO/repositories"
 	"lingobotAPI-GO/utils"
 )
@@ -17,19 +18,19 @@ type UpdateUserDataRequest struct {
 	Gender         *string     `json:"gender"`
 	DataNascimento *string     `json:"data_nascimento"`
 	Tokens         *int        `json:"tokens"`
+	Gemas          *int        `json:"gemas"`
+	Battery        *int        `json:"battery"`
 	Plano          *string     `json:"plano"`
 	Ranking        *int        `json:"ranking"`
 	Listening      *int        `json:"listening"`
 	Writing        *int        `json:"writing"`
 	Reading        *int        `json:"reading"`
 	Speaking       *int        `json:"speaking"`
-	Gemas          *int        `json:"gemas"`
+	Difficulty     *string     `json:"difficulty"`
+	Learning       *string     `json:"learning"`
 	Items          interface{} `json:"items"`
 	DailyMissions  interface{} `json:"dailyMissions"`
 	Achievements   interface{} `json:"achievements"`
-	Difficulty     *string     `json:"difficulty"`
-	Battery        *int        `json:"battery"`
-	Learning       *string     `json:"learning"`
 }
 
 type UpdateUserDataResponse struct {
@@ -37,7 +38,7 @@ type UpdateUserDataResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-// UpdateUserData atualiza os dados do usuário e gera um novo JWT
+// UpdateUserData atualiza os dados do usuário nas tabelas normalizadas e gera um novo JWT
 func UpdateUserData(req UpdateUserDataRequest) (*UpdateUserDataResponse, error) {
 	// Pega o ID do usuário (prioriza 'id', depois 'sub')
 	var userID int
@@ -49,8 +50,8 @@ func UpdateUserData(req UpdateUserDataRequest) (*UpdateUserDataResponse, error) 
 		return nil, errors.New("ID do usuário não fornecido")
 	}
 
-	// Busca o usuário no banco
-	usuario, err := repositories.GetUsuarioByID(userID)
+	// Busca o usuário completo no banco
+	usuarioCompleto, err := repositories.GetUsuarioByID(userID)
 	if err != nil {
 		return nil, errors.New("usuário não encontrado")
 	}
@@ -66,108 +67,90 @@ func UpdateUserData(req UpdateUserDataRequest) (*UpdateUserDataResponse, error) 
 		req.Battery = &battery
 	}
 
-	// Atualiza apenas os campos fornecidos
+	// Atualiza campos da tabela usuario
 	if req.Nome != nil {
-		usuario.Nome = *req.Nome
+		usuarioCompleto.Usuario.Nome = *req.Nome
 	}
 	if req.Sobrenome != nil {
-		usuario.Sobrenome = req.Sobrenome
+		usuarioCompleto.Usuario.Sobrenome = req.Sobrenome
 	}
 	if req.Email != nil {
-		usuario.Email = *req.Email
-	}
-	if req.LingoEXP != nil {
-		usuario.LingoEXP = *req.LingoEXP
-	}
-	if req.Level != nil {
-		usuario.Level = *req.Level
+		usuarioCompleto.Usuario.Email = *req.Email
 	}
 	if req.Gender != nil {
-		usuario.Gender = req.Gender
+		usuarioCompleto.Usuario.Gender = req.Gender
 	}
 	if req.DataNascimento != nil {
-		usuario.DataNascimento = req.DataNascimento
-	}
-	if req.Tokens != nil {
-		usuario.Tokens = *req.Tokens
-	}
-	if req.Plano != nil {
-		usuario.Plano = *req.Plano
-	}
-	if req.Ranking != nil {
-		usuario.Ranking = *req.Ranking
-	}
-	if req.Listening != nil {
-		usuario.Listening = *req.Listening
-	}
-	if req.Writing != nil {
-		usuario.Writing = *req.Writing
-	}
-	if req.Reading != nil {
-		usuario.Reading = *req.Reading
-	}
-	if req.Speaking != nil {
-		usuario.Speaking = *req.Speaking
-	}
-	if req.Gemas != nil {
-		usuario.Gemas = *req.Gemas
-	}
-	if req.Items != nil {
-		usuario.Items = req.Items
-	}
-	if req.DailyMissions != nil {
-		usuario.DailyMissions = req.DailyMissions
-	}
-	if req.Achievements != nil {
-		usuario.Achievements = req.Achievements
-	}
-	if req.Difficulty != nil {
-		usuario.Difficulty = *req.Difficulty
-	}
-	if req.Battery != nil {
-		usuario.Battery = *req.Battery
-	}
-	if req.Learning != nil {
-		usuario.Learning = *req.Learning
+		usuarioCompleto.Usuario.DataNascimento = req.DataNascimento
 	}
 
-	// Atualiza no banco de dados
-	err = repositories.UpdateUsuario(usuario)
+	// Atualiza campos da tabela usuario_economia
+	if req.Tokens != nil {
+		usuarioCompleto.Economia.Tokens = *req.Tokens
+	}
+	if req.Gemas != nil {
+		usuarioCompleto.Economia.Gemas = *req.Gemas
+	}
+	if req.Battery != nil {
+		usuarioCompleto.Economia.Battery = *req.Battery
+	}
+	if req.Plano != nil {
+		usuarioCompleto.Economia.Plano = *req.Plano
+	}
+
+	// Atualiza campos da tabela usuario_progresso
+	if req.LingoEXP != nil {
+		usuarioCompleto.Progresso.LingoEXP = *req.LingoEXP
+	}
+	if req.Level != nil {
+		usuarioCompleto.Progresso.Level = *req.Level
+	}
+	if req.Listening != nil {
+		usuarioCompleto.Progresso.Listening = *req.Listening
+	}
+	if req.Writing != nil {
+		usuarioCompleto.Progresso.Writing = *req.Writing
+	}
+	if req.Reading != nil {
+		usuarioCompleto.Progresso.Reading = *req.Reading
+	}
+	if req.Speaking != nil {
+		usuarioCompleto.Progresso.Speaking = *req.Speaking
+	}
+	if req.Ranking != nil {
+		usuarioCompleto.Progresso.Ranking = *req.Ranking
+	}
+	if req.Difficulty != nil {
+		usuarioCompleto.Progresso.Difficulty = *req.Difficulty
+	}
+	if req.Learning != nil {
+		usuarioCompleto.Progresso.Learning = *req.Learning
+	}
+
+	// Atualiza campos da tabela usuario_conteudo
+	if req.Items != nil {
+		usuarioCompleto.Conteudo.Items = req.Items
+	}
+	if req.DailyMissions != nil {
+		usuarioCompleto.Conteudo.DailyMissions = req.DailyMissions
+	}
+	if req.Achievements != nil {
+		usuarioCompleto.Conteudo.Achievements = req.Achievements
+	}
+
+	// Atualiza no banco de dados (todas as tabelas necessárias)
+	err = repositories.UpdateUsuarioCompleto(usuarioCompleto)
 	if err != nil {
 		return nil, errors.New("erro ao atualizar usuário")
 	}
 
-	// Monta os dados para o novo JWT
+	// Monta os dados para o novo JWT (apenas o ID)
 	userData := map[string]interface{}{
-		"id":              usuario.ID,
-		"nome":            usuario.Nome,
-		"sobrenome":       usuario.Sobrenome,
-		"email":           usuario.Email,
-		"lingo_exp":       usuario.LingoEXP,
-		"level":           usuario.Level,
-		"gender":          usuario.Gender,
-		"data_nascimento": usuario.DataNascimento,
-		"tokens":          usuario.Tokens,
-		"plano":           usuario.Plano,
-		"created_at":      usuario.CreatedAt,
-		"referal_code":    usuario.ReferalCode,
-		"invited_by":      usuario.InvitedBy,
-		"ranking":         usuario.Ranking,
-		"listening":       usuario.Listening,
-		"writing":         usuario.Writing,
-		"reading":         usuario.Reading,
-		"speaking":        usuario.Speaking,
-		"gemas":           usuario.Gemas,
-		"items":           usuario.Items,
-		"daily_missions":  usuario.DailyMissions,
-		"achievements":    usuario.Achievements,
-		"difficulty":      usuario.Difficulty,
-		"battery":         usuario.Battery,
-		"learning":        usuario.Learning,
+		"id": usuarioCompleto.Usuario.ID,
 	}
 
 	// Gera novo access token
-	accessToken, err := utils.GenerateAccessToken(usuario.ID, userData)
+	accessToken, err := utils.GenerateAccessToken(usuarioCompleto.Usuario.ID, userData)
 	if err != nil {
 		return nil, errors.New("erro ao gerar novo token")
 	}

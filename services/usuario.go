@@ -18,13 +18,13 @@ type CriarUsuarioRequest struct {
 	DataNascimento *string `json:"data_nascimento"`
 }
 
-// CriarUsuario cria um novo usuário com todas as validações
+// CriarUsuario cria um novo usuário nas 6 tabelas
 func CriarUsuario(req CriarUsuarioRequest) error {
 	// Validação de nome e sobrenome
-	if !utils.ValidateName(req.Nome) {
+	if !utils.ValidateNome(req.Nome) {
 		return errors.New("nome deve conter apenas letras")
 	}
-	if !utils.ValidateName(req.Sobrenome) {
+	if !utils.ValidateNome(req.Sobrenome) {
 		return errors.New("sobrenome deve conter apenas letras")
 	}
 
@@ -89,35 +89,53 @@ func CriarUsuario(req CriarUsuarioRequest) error {
 		"achievements": achievementsList,
 	}
 
-	// Cria o novo usuário
-	novoUsuario := &models.Usuario{
+	// 1. Prepara dados da tabela usuario
+	usuario := &models.Usuario{
 		Nome:           req.Nome,
 		Sobrenome:      &req.Sobrenome,
 		Email:          req.Email,
 		Password:       senhaHash,
 		Gender:         req.Gender,
 		DataNascimento: req.DataNascimento,
-		LingoEXP:       0,
-		Level:          1,
-		Tokens:         0,
-		Plano:          "free",
-		CreatedAt:      time.Now().Format("2006-01-02 15:04:05"),
-		Ranking:        4,
-		Listening:      0,
-		Writing:        0,
-		Reading:        0,
-		Speaking:       0,
-		Gemas:          0,
-		Items:          itensIniciais,
-		DailyMissions:  dailyMissionsIniciais,
-		Achievements:   achievementsIniciais,
-		Difficulty:     "medium",
-		Battery:        10,
-		Learning:       "en",
+		CreatedAt:      time.Now(),
 	}
 
-	// Insere o usuário
-	err = repositories.InsertUsuario(novoUsuario)
+	// 2. Prepara dados da tabela usuario_economia
+	economia := &models.UsuarioEconomia{
+		Tokens:  0,
+		Gemas:   0,
+		Battery: 10,
+		Plano:   "free",
+	}
+
+	// 3. Prepara dados da tabela usuario_progresso
+	progresso := &models.UsuarioProgresso{
+		LingoEXP:   0,
+		Level:      1,
+		Listening:  0,
+		Writing:    0,
+		Reading:    0,
+		Speaking:   0,
+		Ranking:    0,
+		Difficulty: "medium",
+		Learning:   "en",
+	}
+
+	// 4. Prepara dados da tabela usuario_social
+	social := &models.UsuarioSocial{
+		ReferalCode: nil, // Será implementado depois se necessário
+		InvitedBy:   nil,
+	}
+
+	// 5. Prepara dados da tabela usuario_conteudo
+	conteudo := &models.UsuarioConteudo{
+		Items:         itensIniciais,
+		DailyMissions: dailyMissionsIniciais,
+		Achievements:  achievementsIniciais,
+	}
+
+	// Insere o usuário em todas as tabelas (transação)
+	err = repositories.InsertUsuario(usuario, economia, progresso, social, conteudo)
 	if err != nil {
 		return err
 	}

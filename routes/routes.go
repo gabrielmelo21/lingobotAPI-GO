@@ -17,9 +17,9 @@ func formatDuration(d time.Duration) string {
 }
 
 func RegisterRoutes(router *gin.Engine) {
+	startTime := time.Now()
 
 	// Rotas públicas (sem autenticação)
-	startTime := time.Now()
 	router.GET("/health", func(c *gin.Context) {
 		uptime := formatDuration(time.Since(startTime))
 		c.JSON(200, gin.H{
@@ -32,14 +32,19 @@ func RegisterRoutes(router *gin.Engine) {
 	router.POST("/usuarios", controllers.CriarUsuario)
 	router.POST("/login", controllers.Login)
 
-	// Rotas protegidas (com autenticação)
+	// Rotas protegidas (com autenticação JWT)
 	protected := router.Group("/")
 	protected.Use(middlewares.AuthMiddleware())
 	{
+		// Usuários - Lista geral
+		protected.GET("/usuarios", controllers.GetUsuarios)
 		protected.POST("/update-user-data", controllers.UpdateUserData)
 
-		// precisa de ma proteção plus ADM apenas
-		//protected.GET("/usuarios", controllers.GetUsuarios)
+		// Usuários - Dados específicos por ID
+		protected.GET("/usuarios/profile/:id", controllers.GetUsuarioProfile)                  // Perfil básico
+		protected.GET("/usuarios/content/economy/progress/:id", controllers.GetUsuarioContent) // Economia, progresso, conteúdo
+		protected.GET("/usuarios/social/:id", controllers.GetUsuarioSocial)                    // Referal code, invited_by
+		protected.GET("/usuarios/security/:id", controllers.GetUsuarioSecurity)                // OTP (admin only)
 
 		// IA - Todas as rotas protegidas
 		protected.POST("/ai/gemini", controllers.AIGemini)
@@ -52,6 +57,5 @@ func RegisterRoutes(router *gin.Engine) {
 		// Mídia - TTS e Transcrição
 		protected.POST("/tts", controllers.TTS)
 		protected.POST("/transcribe", controllers.TranscribeAudio)
-
 	}
 }

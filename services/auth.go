@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"lingobotAPI-GO/repositories"
 	"lingobotAPI-GO/utils"
 )
@@ -19,58 +20,53 @@ type LoginResponse struct {
 
 // Login realiza o login do usuário e retorna tokens JWT
 func Login(req LoginRequest) (*LoginResponse, error) {
-	// Busca o usuário pelo email
-	usuario, err := repositories.GetUsuarioByEmail(req.Email)
+	fmt.Printf("🔍 Tentando login para: %s\n", req.Email)
+
+	// Busca o usuário completo pelo email
+	usuarioCompleto, err := repositories.GetUsuarioByEmail(req.Email)
 	if err != nil {
+		fmt.Printf("❌ Erro ao buscar usuário: %v\n", err)
 		return nil, errors.New("credenciais inválidas")
 	}
+
+	if usuarioCompleto == nil {
+		fmt.Printf("❌ Usuário não encontrado\n")
+		return nil, errors.New("credenciais inválidas")
+	}
+
+	fmt.Printf("✅ Usuário encontrado: %s (ID: %d)\n", usuarioCompleto.Usuario.Email, usuarioCompleto.Usuario.ID)
 
 	// Verifica a senha
-	if !utils.VerifyPassword(req.Password, usuario.Password) {
+	senhaCorreta := utils.VerifyPassword(req.Password, usuarioCompleto.Usuario.Password)
+	fmt.Printf("🔑 Senha correta: %v\n", senhaCorreta)
+
+	if !senhaCorreta {
+		fmt.Printf("❌ Senha incorreta\n")
 		return nil, errors.New("credenciais inválidas")
 	}
 
-	// Monta os dados do usuário para o token
+	fmt.Printf("✅ Senha validada com sucesso\n")
+
+	// JWT minimalista - apenas o ID do usuário
+	// O frontend deve buscar os dados completos após o login se necessário
 	userData := map[string]interface{}{
-		"id":              usuario.ID,
-		"nome":            usuario.Nome,
-		"sobrenome":       usuario.Sobrenome,
-		"email":           usuario.Email,
-		"password":        usuario.Password,
-		"otp_code":        usuario.OTPCode,
-		"lingo_exp":       usuario.LingoEXP,
-		"level":           usuario.Level,
-		"gender":          usuario.Gender,
-		"data_nascimento": usuario.DataNascimento,
-		"tokens":          usuario.Tokens,
-		"plano":           usuario.Plano,
-		"created_at":      usuario.CreatedAt,
-		"referal_code":    usuario.ReferalCode,
-		"invited_by":      usuario.InvitedBy,
-		"ranking":         usuario.Ranking,
-		"listening":       usuario.Listening,
-		"writing":         usuario.Writing,
-		"reading":         usuario.Reading,
-		"speaking":        usuario.Speaking,
-		"gemas":           usuario.Gemas,
-		"items":           usuario.Items,
-		"daily_missions":  usuario.DailyMissions,
-		"achievements":    usuario.Achievements,
-		"difficulty":      usuario.Difficulty,
-		"battery":         usuario.Battery,
-		"learning":        usuario.Learning,
+		"id": usuarioCompleto.Usuario.ID,
 	}
 
 	// Gera os tokens
-	accessToken, err := utils.GenerateAccessToken(usuario.ID, userData)
+	accessToken, err := utils.GenerateAccessToken(usuarioCompleto.Usuario.ID, userData)
 	if err != nil {
+		fmt.Printf("❌ Erro ao gerar access token: %v\n", err)
 		return nil, errors.New("erro ao gerar token de acesso")
 	}
 
-	refreshToken, err := utils.GenerateRefreshToken(usuario.ID)
+	refreshToken, err := utils.GenerateRefreshToken(usuarioCompleto.Usuario.ID)
 	if err != nil {
+		fmt.Printf("❌ Erro ao gerar refresh token: %v\n", err)
 		return nil, errors.New("erro ao gerar token de refresh")
 	}
+
+	fmt.Printf("✅ Tokens gerados com sucesso\n")
 
 	return &LoginResponse{
 		Mensagem:     "Login realizado com sucesso!",

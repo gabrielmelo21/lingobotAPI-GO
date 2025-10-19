@@ -3,6 +3,7 @@ package controllers
 import (
 	"lingobotAPI-GO/repositories"
 	"lingobotAPI-GO/services"
+	"lingobotAPI-GO/utils"
 	"net/http"
 	"strconv"
 
@@ -12,17 +13,17 @@ import (
 func GetUsuarios(c *gin.Context) {
 	usuarios, err := repositories.GetAllUsuarios()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"erro": "Erro ao buscar usuários"})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"erro": "Erro ao buscar usuários"})
 		return
 	}
-	c.JSON(http.StatusOK, usuarios)
+	utils.SonicJSON(c, http.StatusOK, usuarios)
 }
 
 func CriarUsuario(c *gin.Context) {
 	var req services.CriarUsuarioRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"erro": "Dados inválidos"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"erro": "Dados inválidos"})
 		return
 	}
 
@@ -35,35 +36,35 @@ func CriarUsuario(c *gin.Context) {
 			statusCode = http.StatusConflict
 		}
 
-		c.JSON(statusCode, gin.H{"erro": err.Error()})
+		utils.SonicJSON(c, statusCode, gin.H{"erro": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"mensagem": "Usuário criado com sucesso!"})
+	utils.SonicJSON(c, http.StatusCreated, gin.H{"mensagem": "Usuário criado com sucesso!"})
 }
 
 func Login(c *gin.Context) {
 	var req services.LoginRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"erro": "Dados inválidos"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"erro": "Dados inválidos"})
 		return
 	}
 
 	response, err := services.Login(req)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"erro": err.Error()})
+		utils.SonicJSON(c, http.StatusUnauthorized, gin.H{"erro": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	utils.SonicJSON(c, http.StatusOK, response)
 }
 
 func UpdateUserData(c *gin.Context) {
 	var req services.UpdateUserDataRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"erro": "Dados inválidos"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"erro": "Dados inválidos"})
 		return
 	}
 
@@ -75,11 +76,11 @@ func UpdateUserData(c *gin.Context) {
 			statusCode = http.StatusNotFound
 		}
 
-		c.JSON(statusCode, gin.H{"erro": err.Error()})
+		utils.SonicJSON(c, statusCode, gin.H{"erro": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	utils.SonicJSON(c, http.StatusOK, response)
 }
 
 // GetUsuarioProfile retorna dados básicos do perfil (nome, email, etc)
@@ -87,17 +88,17 @@ func GetUsuarioProfile(c *gin.Context) {
 	idParam := c.Param("id")
 	usuarioID, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"erro": "ID inválido"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"erro": "ID inválido"})
 		return
 	}
 
 	profile, err := repositories.GetUsuarioProfile(usuarioID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"erro": "Usuário não encontrado"})
+		utils.SonicJSON(c, http.StatusNotFound, gin.H{"erro": "Usuário não encontrado"})
 		return
 	}
 
-	c.JSON(http.StatusOK, profile)
+	utils.SonicJSON(c, http.StatusOK, profile)
 }
 
 // GetUsuarioContent retorna economia, progresso e conteúdo
@@ -105,17 +106,17 @@ func GetUsuarioContent(c *gin.Context) {
 	idParam := c.Param("id")
 	usuarioID, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"erro": "ID inválido"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"erro": "ID inválido"})
 		return
 	}
 
 	content, err := repositories.GetUsuarioContent(usuarioID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"erro": "Dados não encontrados"})
+		utils.SonicJSON(c, http.StatusNotFound, gin.H{"erro": "Dados não encontrados"})
 		return
 	}
 
-	c.JSON(http.StatusOK, content)
+	utils.SonicJSON(c, http.StatusOK, content)
 }
 
 // GetUsuarioSocial retorna dados sociais (referal_code, invited_by)
@@ -123,17 +124,17 @@ func GetUsuarioSocial(c *gin.Context) {
 	idParam := c.Param("id")
 	usuarioID, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"erro": "ID inválido"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"erro": "ID inválido"})
 		return
 	}
 
 	social, err := repositories.GetUsuarioSocial(usuarioID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"erro": "Dados sociais não encontrados"})
+		utils.SonicJSON(c, http.StatusNotFound, gin.H{"erro": "Dados sociais não encontrados"})
 		return
 	}
 
-	c.JSON(http.StatusOK, social)
+	utils.SonicJSON(c, http.StatusOK, social)
 }
 
 // GetUsuarioSecurity retorna dados de segurança (OTP) - ADMIN ONLY
@@ -141,7 +142,7 @@ func GetUsuarioSecurity(c *gin.Context) {
 	idParam := c.Param("id")
 	usuarioID, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"erro": "ID inválido"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"erro": "ID inválido"})
 		return
 	}
 
@@ -150,9 +151,9 @@ func GetUsuarioSecurity(c *gin.Context) {
 
 	security, err := repositories.GetUsuarioSecurity(usuarioID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"erro": "Dados de segurança não encontrados"})
+		utils.SonicJSON(c, http.StatusNotFound, gin.H{"erro": "Dados de segurança não encontrados"})
 		return
 	}
 
-	c.JSON(http.StatusOK, security)
+	utils.SonicJSON(c, http.StatusOK, security)
 }

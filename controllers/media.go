@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lingobotAPI-GO/models"
 	"lingobotAPI-GO/services"
+	"lingobotAPI-GO/utils"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,7 +18,7 @@ func TTS(c *gin.Context) {
 	var req models.TTSRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Texto é obrigatório"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Texto é obrigatório"})
 		return
 	}
 
@@ -27,7 +28,7 @@ func TTS(c *gin.Context) {
 
 	// Valida índice de voz
 	if voiceIndex < 0 || voiceIndex >= len(services.VoiceIDs) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Índice de voz inválido"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Índice de voz inválido"})
 		return
 	}
 
@@ -36,7 +37,7 @@ func TTS(c *gin.Context) {
 	// Gera o áudio
 	audioData, err := services.GenerateTTS(text, voiceIndex, premium)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao gerar áudio"})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"error": "Erro ao gerar áudio"})
 		return
 	}
 
@@ -49,7 +50,7 @@ func TranscribeAudio(c *gin.Context) {
 	// Verifica se foi enviado um arquivo
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Nenhum arquivo enviado"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Nenhum arquivo enviado"})
 		return
 	}
 
@@ -58,7 +59,7 @@ func TranscribeAudio(c *gin.Context) {
 	tempPath := filepath.Join(tempDir, fmt.Sprintf("audio_%d_%s", time.Now().UnixNano(), file.Filename))
 
 	if err := c.SaveUploadedFile(file, tempPath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar arquivo"})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"error": "Erro ao salvar arquivo"})
 		return
 	}
 	defer os.Remove(tempPath) // Remove após processar
@@ -68,12 +69,12 @@ func TranscribeAudio(c *gin.Context) {
 	// Transcreve o áudio
 	text, err := services.TranscribeAudio(tempPath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Retorna o texto transcrito
-	c.JSON(http.StatusOK, models.TranscribeResponse{
+	utils.SonicJSON(c, http.StatusOK, models.TranscribeResponse{
 		Text: text,
 	})
 }

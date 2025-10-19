@@ -3,6 +3,7 @@ package controllers
 import (
 	"lingobotAPI-GO/models"
 	"lingobotAPI-GO/services"
+	"lingobotAPI-GO/utils"
 	"net/http"
 	"time"
 
@@ -14,13 +15,13 @@ func AIGemini(c *gin.Context) {
 	var req models.AIRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Text input is required"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Text input is required"})
 		return
 	}
 
 	response, err := services.CallAIWithFallback(req.Text, req.Mistral, req.Cohere, req.Groq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -33,13 +34,13 @@ func AICohere(c *gin.Context) {
 	var req models.AIRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Text input is required"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Text input is required"})
 		return
 	}
 
 	response, err := services.CallCohere(req.Text)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -51,13 +52,13 @@ func AIMistral(c *gin.Context) {
 	var req models.AIRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Text input is required"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Text input is required"})
 		return
 	}
 
 	response, err := services.CallMistral(req.Text)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -69,13 +70,13 @@ func AIGroq(c *gin.Context) {
 	var req models.AIRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Text input is required"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Text input is required"})
 		return
 	}
 
 	response, err := services.CallGroq(req.Text)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -87,13 +88,13 @@ func AIOpenRouter(c *gin.Context) {
 	var req models.AIRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Text input is required"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Text input is required"})
 		return
 	}
 
 	response, err := services.CallOpenRouter(req.Text)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.SonicJSON(c, http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -105,7 +106,7 @@ func AIBenchmark(c *gin.Context) {
 	var req models.AIRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Text input is required"})
+		utils.SonicJSON(c, http.StatusBadRequest, gin.H{"error": "Text input is required"})
 		return
 	}
 
@@ -138,5 +139,5 @@ func AIBenchmark(c *gin.Context) {
 	benchmark("Groq", services.CallGroq)
 	benchmark("OpenRouter", services.CallOpenRouter)
 
-	c.JSON(http.StatusOK, results)
+	utils.SonicJSON(c, http.StatusOK, results)
 }
